@@ -20,7 +20,7 @@ interface WebformAccessCheckerInterface {
    *   (Optional) Defaults to the uid of the current user.
    *
    * @return bool TRUE if access is allowed, otherwise FALSE.
-   * TRUE if access is allowed, otherwise FALSE.
+   *   TRUE if access is allowed, otherwise FALSE.
    */
   public function isWebformAccessAllowed(ContentEntityInterface $entity, $uid = FALSE);
 

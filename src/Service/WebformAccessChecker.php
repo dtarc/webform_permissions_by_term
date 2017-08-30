@@ -3,12 +3,9 @@
 namespace Drupal\webform_permissions_by_term\Service;
 
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\webform_permissions_by_term\Event\EntityFieldValueAccessDeniedEvent;
-use Drupal\webform_permissions_by_term\Event\PermissionsByEntityEvents;
 use Drupal\permissions_by_term\Service\AccessCheck;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -74,7 +71,7 @@ class WebformAccessChecker extends AccessCheck implements WebformAccessCheckerIn
     if ($entity->getEntityTypeId() == 'webform_submission') {
       // TODO get vocab id dynamically.
       // Maybe create a form for the user to choose vocab
-      // This needs to be the vocab designated for use with permissions_by_term module
+      // This needs to be the vocab designated for use with permissions_by_term module.
       $vocab = 'hierarchy';
       $permissions_by_term = NULL;
       $permissions_by_term = $entity->getData($vocab);

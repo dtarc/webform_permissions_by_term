@@ -120,4 +120,5 @@ class EntityFieldValueAccessDeniedEvent extends Event {
   public function getIndex() {
     return $this->index;
   }
+
 }
