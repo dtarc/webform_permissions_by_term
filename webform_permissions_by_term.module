@@ -2,7 +2,20 @@
 use Drupal\Core\Form\FormStateInterface;
 
 function webform_permissions_by_term_form_webform_settings_form_alter (array &$form, FormStateInterface $form_state, $form_id) {
+  
+  $form['webform_permissions_by_term'] = [
+    '#type' => 'details',
+    '#title' => 'Webform Permissions by Term',
+    '#tree' => TRUE,
+    '#weight' => -100,
+  ];
 
-  ksm($form_id);
+  $form['webform_permissions_by_term']['enable_webform_permissions_by_term'] = [
+    '#type' => 'checkbox',
+    '#title' => 'Enable Webform permissions by term',
+    '#description' => 'If checked, this form will be secured by Taxonomy vocabulary.',
+    '#return_value' => TRUE,
+    '#default_value' => TRUE,
+  ];
 
 }
