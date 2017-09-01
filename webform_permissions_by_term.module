@@ -66,10 +66,11 @@ function webform_permissions_by_term_get_default_settings() {
 function webform_permissions_by_term_webform_submission_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
   if(!is_webform_secured_by_term($form_state)) return;
 
- // echo 'webform_permissions_by_term_' . get_webform_secured_by_term_vocab_machine_name();
+  echo 'webform_permissions_by_term_' . get_webform_secured_by_term_vocab_machine_name();
 
-  if(does_webform_have_vocab_element($form_state)) {
-    exit(0);
+  if(!does_webform_have_vocab_element($form_state)) {
+    // We want to add the element
+    // @todo
   }
 
 }
@@ -92,7 +93,12 @@ function is_webform_secured_by_term(FormStateInterface $form_state){
 }
 
 function does_webform_have_vocab_element(FormStateInterface $form_state){
-  return $form_state->has('webform_permissions_by_term_' . get_webform_secured_by_term_vocab_machine_name());
+  $element = $form_state->getFormObject()->getEntity()->getWebform()->getElementDecoded(get_webform_secured_by_term_webform_machine_name());
+
+  if(!empty($element)){
+    return TRUE;
+  }
+  return FALSE;
 }
 
 function get_webform_secured_by_term_vocab_machine_name(){
@@ -100,4 +106,8 @@ function get_webform_secured_by_term_vocab_machine_name(){
   $name = strtolower($name);
   $name = str_replace(' ', '_', $name);
   return $name;
+}
+
+function get_webform_secured_by_term_webform_machine_name(){
+  return 'webform_permissions_by_term_' . get_webform_secured_by_term_vocab_machine_name();
 }
