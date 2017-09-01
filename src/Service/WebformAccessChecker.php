@@ -69,30 +69,29 @@ class WebformAccessChecker extends AccessCheck implements WebformAccessCheckerIn
    */
   public function isWebformAccessAllowed(ContentEntityInterface $entity, $uid = FALSE) {
     if ($entity->getEntityTypeId() == 'webform_submission') {
-      // TODO get vocab id dynamically.
-      // Maybe create a form for the user to choose vocab
+      $permissions_by_term = NULL;
+
+      // Get vocab id dynamically.
       // This needs to be the vocab designated for use with permissions_by_term module.
-      $vocab = NULL;
+      $chosen_perms_vocab = get_webform_secured_by_term_vocab_machine_name();
       foreach ($entity->getWebform()->getElementsDecoded() as $element_key => $element_value) {
-        // TODO Check if this vocab is infact the selected one in settings form.
+
         if (array_key_exists('#vocabulary', $element_value)) {
-          $vocab = $element_key;
-        }
-      }
-      
-      if ($vocab != NULL) {
-        $permissions_by_term = NULL;
-        $permissions_by_term = $entity->getData($vocab);
-
-
-        if ($permissions_by_term != NULL) {
-          if (!$this->isAccessAllowedByDatabase($permissions_by_term, $uid)) {
-            // Return that the user is not allowed to access this entity.
-            return FALSE;
+          // Check if this vocab is infact the selected one in settings form.
+          if ($chosen_perms_vocab == $element_value['#vocabulary']) {
+            $permissions_by_term = $entity->getData($element_key);
           }
-          return TRUE;
         }
       }
+
+      if ($permissions_by_term != NULL) {
+        if (!$this->isAccessAllowedByDatabase($permissions_by_term, $uid)) {
+          // Return that the user is not allowed to access this entity.
+          return FALSE;
+        }
+        return TRUE;
+      }
+
     }
   }
 
