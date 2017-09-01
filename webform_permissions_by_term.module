@@ -71,6 +71,14 @@ function webform_permissions_by_term_webform_submission_form_alter(array &$form,
   if(!does_webform_have_vocab_element($form_state)) {
     // We want to add the element
     // @todo
+    $elements = $form_state->getFormObject()->getEntity()->getWebform()->getElementsDecoded();
+
+    $elements[get_webform_secured_by_term_vocab_machine_name()] = [
+
+    ];
+
+    $form_state->getFormObject()->getEntity()->getWebform()->setElements($elements);
+
   }
 
 }
