@@ -18,7 +18,7 @@ function webform_permissions_by_term_form_webform_settings_form_alter(array &$fo
   // Get the settings from the webform config entity.
   $webform_settings_form = $form_state->getFormObject();
   $webform = $webform_settings_form->getEntity();
-  $webform_permissions_by_term_settings = $webform->getSettings()['webform_permissions_by_term'];
+  $webform_permissions_by_term_settings = $webform->getSetting('webform_permissions_by_term');
 
   // Get the default settings.
   $settings = webform_permissions_by_term_get_default_settings();
@@ -57,11 +57,47 @@ function webform_permissions_by_term_get_default_settings() {
 }
 
 /**
- * Implements hook_form_BASE_FORM_ID_alter().
- */
-/**
  * Implements hook_webform_submission_form_alter().
+ *
+ * @param array $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ * @param $form_id
  */
-function webform_permissions_by_term_webform_submission_form_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
- // exit(0);
+function webform_permissions_by_term_webform_submission_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+  if(!is_webform_secured_by_term($form_state)) return;
+
+ // echo 'webform_permissions_by_term_' . get_webform_secured_by_term_vocab_machine_name();
+
+  if(does_webform_have_vocab_element($form_state)) {
+    exit(0);
+  }
+
+}
+
+function is_webform_secured_by_term(FormStateInterface $form_state){
+  /* @var \Drupal\webform\WebformEntityForm $webform_settings_form
+   * @var \Drupal\webform\Entity\Webform $webform $webform */
+  // Get the settings from the webform config entity.
+
+  $webform_settings_form = $form_state->getFormObject();
+  $webform = $webform_settings_form->getEntity()->getWebform();
+
+  $webform_permissions_by_term_settings = $webform->getSetting('webform_permissions_by_term');
+  if(!empty($webform_permissions_by_term_settings)){
+    if($webform_permissions_by_term_settings['enable_webform_permissions_by_term']) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+function does_webform_have_vocab_element(FormStateInterface $form_state){
+  return $form_state->has('webform_permissions_by_term_' . get_webform_secured_by_term_vocab_machine_name());
+}
+
+function get_webform_secured_by_term_vocab_machine_name(){
+  $name = \Drupal::config('webform_permissions_by_term.settings.webform_permissions_by_term_vocab')->get('value');
+  $name = strtolower($name);
+  $name = str_replace(' ', '_', $name);
+  return $name;
 }
