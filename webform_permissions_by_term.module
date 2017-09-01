@@ -55,3 +55,13 @@ function webform_permissions_by_term_get_default_settings() {
     'enable_webform_permissions_by_term' => 0,
   ];
 }
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+/**
+ * Implements hook_webform_submission_form_alter().
+ */
+function webform_permissions_by_term_webform_submission_form_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+ // exit(0);
+}
