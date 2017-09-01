@@ -72,16 +72,26 @@ class WebformAccessChecker extends AccessCheck implements WebformAccessCheckerIn
       // TODO get vocab id dynamically.
       // Maybe create a form for the user to choose vocab
       // This needs to be the vocab designated for use with permissions_by_term module.
-      $vocab = 'hierarchy';
-      $permissions_by_term = NULL;
-      $permissions_by_term = $entity->getData($vocab);
-
-      if ($permissions_by_term != NULL) {
-        if (!$this->isAccessAllowedByDatabase($permissions_by_term, $uid)) {
-          // Return that the user is not allowed to access this entity.
-          return FALSE;
+      $vocab = NULL;
+      foreach ($entity->getWebform()->getElementsDecoded() as $element_key => $element_value) {
+        // TODO Check if this vocab is infact the selected one in settings form.
+        if (array_key_exists('#vocabulary', $element_value)) {
+          $vocab = $element_key;
         }
-        return TRUE;
+      }
+      
+      if ($vocab != NULL) {
+        $permissions_by_term = NULL;
+        $permissions_by_term = $entity->getData($vocab);
+
+
+        if ($permissions_by_term != NULL) {
+          if (!$this->isAccessAllowedByDatabase($permissions_by_term, $uid)) {
+            // Return that the user is not allowed to access this entity.
+            return FALSE;
+          }
+          return TRUE;
+        }
       }
     }
   }
