@@ -42,7 +42,7 @@ class SettingsForm extends ConfigFormBase {
     if(!empty($vocabularies)) {
 
       foreach ($vocabularies as $vocab => $settings) {
-        $vocab_options[$vocab] = $vocab;
+        $vocab_options[$settings->get('vid')] = $settings->get('name');
       }
 
       $form['webform_permissions_by_term_vocab'] = [
@@ -63,7 +63,6 @@ class SettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-
 
     \Drupal::configFactory()
       ->getEditable('webform_permissions_by_term.settings.webform_permissions_by_term_vocab')

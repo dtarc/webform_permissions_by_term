@@ -110,10 +110,7 @@ function does_webform_have_vocab_element(FormStateInterface $form_state){
 }
 
 function get_webform_secured_by_term_vocab_machine_name(){
-  $name = \Drupal::config('webform_permissions_by_term.settings.webform_permissions_by_term_vocab')->get('value');
-  $name = strtolower($name);
-  $name = str_replace(' ', '_', $name);
-  return $name;
+  return \Drupal::config('webform_permissions_by_term.settings.webform_permissions_by_term_vocab')->get('value');
 }
 
 function get_webform_secured_by_term_webform_machine_name(){
