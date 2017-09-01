@@ -86,6 +86,10 @@ class PermissionsByEntityKernelEventSubscriber implements EventSubscriberInterfa
       $entity = $request->attributes->get('webform_submission');
     }
 
+//    if ($request->attributes->has('webform_submission')) {
+//      $entity = $request->attributes->get('webform_submission');
+//    }
+
     // If there is no entity abort here.
     if (!$entity) {
       return;
