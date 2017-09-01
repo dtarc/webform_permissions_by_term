@@ -84,6 +84,8 @@ class WebformAccessChecker extends AccessCheck implements WebformAccessCheckerIn
         }
       }
 
+      // TODO Extend this so that user can select multiple terms.
+      // currently it will only work if the single term is selected.
       if ($permissions_by_term != NULL) {
         if (!$this->isAccessAllowedByDatabase($permissions_by_term, $uid)) {
           // Return that the user is not allowed to access this entity.
