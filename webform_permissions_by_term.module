@@ -6,8 +6,11 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\views\ViewExecutable;
-use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\webform\Entity\Webform;
+
+
+const WEBFORM_ELEMENT_NAME = "wf_permissions_by_term_element";
+
 /**
  * Implements hook_form_FORM_ID_alter().
  *
@@ -46,6 +49,9 @@ function webform_permissions_by_term_form_webform_settings_form_alter(array &$fo
     '#return_value' => TRUE,
     '#default_value' => $settings['enable_webform_permissions_by_term'],
   ];
+
+
+  //$webform_settings_form->getEntity()
 }
 
 /**
@@ -67,33 +73,21 @@ function webform_permissions_by_term_get_default_settings() {
 function webform_permissions_by_term_webform_submission_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
   if(!is_webform_secured_by_term($form_state)) return;
 
-  if(!does_webform_have_vocab_element($form_state)) {
-
-
-
-    // We want to add the element
-    // @todo
-    //$elements = $form_state->getFormObject()->getEntity()->getWebform()->getElementsDecoded();
-    //$form_state->getFormObject()->getEntity()->getWebform()->setElements($elements);
-
-    $form[get_webform_secured_by_term_webform_machine_name()] = [
-      '#type' => 'webform_term_select',
-      '#title' => get_webform_secured_by_term_webform_machine_name(),
-      '#vocabulary' => get_webform_secured_by_term_vocab_machine_name(),
-//      '#access' => FALSE,
-    ];
-
-  } else {
-//    $request = \Drupal::request();
+  // Todo, if request is post, set the val
+ //   $request = \Drupal::request();
 //
 //    if($request->getMethod() == 'POST'){
 //      $cqclocationid = $request->get('cqclocationid');
 //
 //
+//    } else {
+//
+//
 //    }
 
 
-  }
+
+
 
 }
 
@@ -114,8 +108,19 @@ function is_webform_secured_by_term(FormStateInterface $form_state){
   return FALSE;
 }
 
+function is_webform_entity_secured_by_term(Webform $entity){
+  // Get the settings from the webform config entity.
+  $webform_permissions_by_term_settings = $entity->getSetting('webform_permissions_by_term');
+  if(!empty($webform_permissions_by_term_settings)){
+    if($webform_permissions_by_term_settings['enable_webform_permissions_by_term']) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 function does_webform_have_vocab_element(FormStateInterface $form_state){
-  $element = $form_state->getFormObject()->getEntity()->getWebform()->getElementDecoded(get_webform_secured_by_term_webform_machine_name());
+  $element = $form_state->getFormObject()->getEntity()->getWebform()->getElementDecoded(WEBFORM_ELEMENT_NAME);
 
   if(!empty($element)){
     return TRUE;
@@ -127,45 +132,37 @@ function get_webform_secured_by_term_vocab_machine_name(){
   return \Drupal::config('webform_permissions_by_term.settings.webform_permissions_by_term_vocab')->get('value');
 }
 
-function get_webform_secured_by_term_webform_machine_name(){
-  return 'webform_permissions_by_term_' . get_webform_secured_by_term_vocab_machine_name();
-}
 
 
-function webform_permissions_by_term_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
-  // TODO Check and implement for our view only.
-  // make sure we're altering the correct view
-  //if ($view->storage->get('id') === 'MY_VIEW' && $view->current_display === 'MY_VIEW_DISPLAY') {
+/**
+ * Implements hook_ENTITY_TYPE_presave().
+ */
+function webform_permissions_by_term_webform_presave(Webform $entity) {
+  $elements = $entity->getElementsDecoded();
+  $has_security_element = array_key_exists(WEBFORM_ELEMENT_NAME, $elements);
 
-  // Traverse through the 'where' part of the query.
-  // foreach top level condition group
-  foreach ($query->where as &$condition_group) {
-    // call helper function to recursively alter conditions
-    _recursively_alter_query_conditions($condition_group['conditions']);
+  if(!is_webform_entity_secured_by_term($entity) && $has_security_element) {
+    $entity->deleteElement(WEBFORM_ELEMENT_NAME);
+    return;
   }
-  //}
-}
+  if(!is_webform_entity_secured_by_term($entity)) return;
+  if($has_security_element) return;
 
-// helper function: (takes in conditions group argument)
-function _recursively_alter_query_conditions(&$conditions) {
-  // foreach condition in condition group
-  foreach ($conditions as &$condition) {
-    // if condition is itself a condition group
-    if (isset($condition['field']) && is_a($condition['field'], 'Drupal\Core\Database\Query\Condition')) {
-      // call the helper function on it
-      _recursively_alter_query_conditions($condition['field']->conditions());
-    }
-    else {
-      // check if we want to alter the condition and if so alter it
-      _alter_query_condition($condition);
-    }
-  }
-}
+  $new_element = [
+    '#type' => 'webform_entity_select',
+    '#title' => 'DO NOT REMOVE-Permissions By term Element',
+    '#short_title_service' => 'Location ID',
+    '#target_type' => 'taxonomy_term',
+    '#selection_handler' => 'default:taxonomy_term',
+    '#selection_settings' => [
+      'target_bundles' => [
+        'services' => 'services'
+      ]
+    ]
+  ];
 
-// separate helper function to determine if the condition is one we want to alter
-function _alter_query_condition(&$condition) {
-  if ($condition['field'] == 'webform_submission_field_pir_hierarchy.value') {
-    $condition['value'] = [0, 5, 3];
-    $condition['operator'] = 'IN';
-  }
+  $elements[WEBFORM_ELEMENT_NAME] = $new_element;
+
+  $entity->setElements($elements);
+
 }
