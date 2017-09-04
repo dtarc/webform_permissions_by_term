@@ -6,7 +6,8 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
-
+use Drupal\views\ViewExecutable;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
 /**
  * Implements hook_form_FORM_ID_alter().
  *
@@ -91,7 +92,7 @@ function webform_permissions_by_term_webform_submission_form_alter(array &$form,
 //
 //    }
 
-    
+
   }
 
 }
@@ -128,4 +129,43 @@ function get_webform_secured_by_term_vocab_machine_name(){
 
 function get_webform_secured_by_term_webform_machine_name(){
   return 'webform_permissions_by_term_' . get_webform_secured_by_term_vocab_machine_name();
+}
+
+
+function webform_permissions_by_term_views_query_alter(ViewExecutable $view, QueryPluginBase $query) {
+  // TODO Check and implement for our view only.
+  // make sure we're altering the correct view
+  //if ($view->storage->get('id') === 'MY_VIEW' && $view->current_display === 'MY_VIEW_DISPLAY') {
+
+  // Traverse through the 'where' part of the query.
+  // foreach top level condition group
+  foreach ($query->where as &$condition_group) {
+    // call helper function to recursively alter conditions
+    _recursively_alter_query_conditions($condition_group['conditions']);
+  }
+  //}
+}
+
+// helper function: (takes in conditions group argument)
+function _recursively_alter_query_conditions(&$conditions) {
+  // foreach condition in condition group
+  foreach ($conditions as &$condition) {
+    // if condition is itself a condition group
+    if (isset($condition['field']) && is_a($condition['field'], 'Drupal\Core\Database\Query\Condition')) {
+      // call the helper function on it
+      _recursively_alter_query_conditions($condition['field']->conditions());
+    }
+    else {
+      // check if we want to alter the condition and if so alter it
+      _alter_query_condition($condition);
+    }
+  }
+}
+
+// separate helper function to determine if the condition is one we want to alter
+function _alter_query_condition(&$condition) {
+  if ($condition['field'] == 'webform_submission_field_pir_hierarchy.value') {
+    $condition['value'] = [0, 5, 3];
+    $condition['operator'] = 'IN';
+  }
 }
