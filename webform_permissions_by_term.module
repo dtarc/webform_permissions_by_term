@@ -76,9 +76,11 @@ function webform_permissions_by_term_webform_submission_form_alter(array &$form,
     $form['elements'][WEBFORM_SECURITY_ELEMENT_NAME]['#hidden'] = TRUE;
   }
   // Todo, if request is post, set the val
-  // $request = \Drupal::request();
-  // if($request->getMethod() == 'POST'){
-  // $cqclocationid = $request->get('cqclocationid');.
+//   $request = \Drupal::request();
+//   if($request->getMethod() == 'POST') {
+//     $cqclocationid = $request->get('cqclocationid');
+//     $form['elements'][WEBFORM_SECURITY_ELEMENT_NAME]['#default_value'] = $cqclocationid;
+//   }
 }
 
 /**
