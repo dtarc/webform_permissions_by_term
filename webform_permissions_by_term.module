@@ -68,7 +68,7 @@ function webform_permissions_by_term_get_default_settings() {
 function webform_permissions_by_term_webform_submission_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
   /* @var $webform_settings_form \Drupal\webform\WebformEntityForm */
   $webform_settings_form = $form_state->getFormObject();
-  if (!is_webform_entity_secured_by_term($webform_settings_form->getEntity())) {
+  if (!is_webform_entity_secured_by_term($webform_settings_form->getEntity()->getWebform())) {
     return;
   }
 
@@ -93,6 +93,7 @@ function webform_permissions_by_term_webform_submission_form_alter(array &$form,
 function is_webform_entity_secured_by_term(EntityInterface $entity) {
   // Get the settings from the webform config entity.
   /* @var $entity \Drupal\webform\Entity\Webform */
+
   $webform_permissions_by_term_settings = $entity->getSetting('webform_permissions_by_term');
   if (!empty($webform_permissions_by_term_settings)) {
     if ($webform_permissions_by_term_settings['enable_webform_permissions_by_term']) {
@@ -105,7 +106,6 @@ function is_webform_entity_secured_by_term(EntityInterface $entity) {
 }
 
 /**
- * Method to test whether a Webform has the webform element.
  *
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  *   The form state object.
@@ -142,7 +142,7 @@ function webform_permissions_by_term_webform_presave(Webform $entity) {
   // Does this webform already have the security element?
   $has_security_element = array_key_exists(WEBFORM_SECURITY_ELEMENT_NAME, $elements);
 
-  // If Webform isn't secured, but it has the element, remove the element.
+  //If Webform isn't secured, but it has the element, remove the element.
   if (!is_webform_entity_secured_by_term($entity) && $has_security_element) {
     $entity->deleteElement(WEBFORM_SECURITY_ELEMENT_NAME);
     return;
