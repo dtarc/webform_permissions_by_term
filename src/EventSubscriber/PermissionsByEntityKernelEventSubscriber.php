@@ -104,22 +104,25 @@ class PermissionsByEntityKernelEventSubscriber implements EventSubscriberInterfa
       $this->checkedEntityCache->add($entity);
     }
 
+
+
     // Check if the current user is allowed to access this webform submission.
-    // TODO Check if this webform submission has permissions checkbox enabled.
     if (
       $entity &&
       $entity instanceof ContentEntityInterface &&
       $entity->getEntityTypeId() == 'webform_submission' &&
-      !$this->webformAccessChecker->isWebformAccessAllowed($entity)
+      $entity->getWebform()->getSetting('webform_permissions_by_term')['enable_webform_permissions_by_term'] == TRUE
     ) {
+      if (!$this->webformAccessChecker->isWebformAccessAllowed($entity)) {
+        // If the current user is not allowed to access this webform submission,
+        // we throw an AccessDeniedHttpException.
+        throw new AccessDeniedHttpException(
+          $this->translation->translate(
+            'You are not allowed to view this webform submission.'
+          )
+        );
+      }
 
-      // If the current user is not allowed to access this webform submission,
-      // we throw an AccessDeniedHttpException.
-      throw new AccessDeniedHttpException(
-        $this->translation->translate(
-          'You are not allowed to view this webform submission.'
-        )
-      );
     }
   }
 
