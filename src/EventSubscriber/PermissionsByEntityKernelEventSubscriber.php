@@ -105,6 +105,7 @@ class PermissionsByEntityKernelEventSubscriber implements EventSubscriberInterfa
     }
 
     // Check if the current user is allowed to access this webform submission.
+    // TODO Check if this webform submission has permissions checkbox enabled.
     if (
       $entity &&
       $entity instanceof ContentEntityInterface &&
