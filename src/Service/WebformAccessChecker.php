@@ -71,18 +71,7 @@ class WebformAccessChecker extends AccessCheck implements WebformAccessCheckerIn
     if ($entity->getEntityTypeId() == 'webform_submission') {
       $permissions_by_term = NULL;
 
-      // Get vocab id dynamically.
-      // This needs to be the vocab designated for use with permissions_by_term module.
-      $chosen_perms_vocab = get_webform_secured_by_term_vocab_machine_name();
-      foreach ($entity->getWebform()->getElementsDecoded() as $element_key => $element_value) {
-
-        if (array_key_exists('#vocabulary', $element_value)) {
-          // Check if this vocab is infact the selected one in settings form.
-          if ($chosen_perms_vocab == $element_value['#vocabulary']) {
-            $permissions_by_term = $entity->getData($element_key);
-          }
-        }
-      }
+      $permissions_by_term = $entity->getData(WEBFORM_SECURITY_ELEMENT_NAME);
 
       // TODO Extend this so that user can select multiple terms.
       // currently it will only work if the single term is selected.
