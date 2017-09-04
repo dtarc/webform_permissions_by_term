@@ -5,16 +5,18 @@
  * Contains webform_location_provider_element.module.
  */
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\webform\Entity\Webform;
 
-
-const WEBFORM_ELEMENT_NAME = "wf_permissions_by_term_element";
+// The name of the Webform security element to be added to forms if req'd.
+const WEBFORM_SECURITY_ELEMENT_NAME = "wf_permissions_by_term_element";
 
 /**
  * Implements hook_form_FORM_ID_alter().
  *
- * {@inheritdoc}
+ * Adds options to Webform settings to allow the enable of security by term
+ * on the specific Webform.
  */
 function webform_permissions_by_term_form_webform_settings_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
   /* @var \Drupal\webform\WebformEntitySettingsForm $webform_settings_form
@@ -49,9 +51,6 @@ function webform_permissions_by_term_form_webform_settings_form_alter(array &$fo
     '#return_value' => TRUE,
     '#default_value' => $settings['enable_webform_permissions_by_term'],
   ];
-
-
-  //$webform_settings_form->getEntity()
 }
 
 /**
@@ -65,89 +64,102 @@ function webform_permissions_by_term_get_default_settings() {
 
 /**
  * Implements hook_webform_submission_form_alter().
- *
- * @param array $form
- * @param \Drupal\Core\Form\FormStateInterface $form_state
- * @param $form_id
  */
 function webform_permissions_by_term_webform_submission_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
-  if(!is_webform_secured_by_term($form_state)) return;
-
-  // Todo, if request is post, set the val
- //   $request = \Drupal::request();
-//
-//    if($request->getMethod() == 'POST'){
-//      $cqclocationid = $request->get('cqclocationid');
-//
-//
-//    } else {
-//
-//
-//    }
-
-
-
-
-
-}
-
-function is_webform_secured_by_term(FormStateInterface $form_state){
-  /* @var \Drupal\webform\WebformEntityForm $webform_settings_form
-   * @var \Drupal\webform\Entity\Webform $webform $webform */
-  // Get the settings from the webform config entity.
-
+  /* @var $webform_settings_form \Drupal\webform\WebformEntityForm */
   $webform_settings_form = $form_state->getFormObject();
-  $webform = $webform_settings_form->getEntity()->getWebform();
-
-  $webform_permissions_by_term_settings = $webform->getSetting('webform_permissions_by_term');
-  if(!empty($webform_permissions_by_term_settings)){
-    if($webform_permissions_by_term_settings['enable_webform_permissions_by_term']) {
-      return TRUE;
-    }
+  if (!is_webform_entity_secured_by_term($webform_settings_form->getEntity())) {
+    return;
   }
-  return FALSE;
+
+  if (!empty($form['elements'][WEBFORM_SECURITY_ELEMENT_NAME])) {
+    $form['elements'][WEBFORM_SECURITY_ELEMENT_NAME]['#hidden'] = TRUE;
+  }
+  // Todo, if request is post, set the val
+  // $request = \Drupal::request();
+  // if($request->getMethod() == 'POST'){
+  // $cqclocationid = $request->get('cqclocationid');.
 }
 
-function is_webform_entity_secured_by_term(Webform $entity){
+/**
+ * Method to test if a Webform is secured by term.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The webform to test.
+ *
+ * @return bool
+ *   Whether the webform is secured or not.
+ */
+function is_webform_entity_secured_by_term(EntityInterface $entity) {
   // Get the settings from the webform config entity.
+  /* @var $entity \Drupal\webform\Entity\Webform */
   $webform_permissions_by_term_settings = $entity->getSetting('webform_permissions_by_term');
-  if(!empty($webform_permissions_by_term_settings)){
-    if($webform_permissions_by_term_settings['enable_webform_permissions_by_term']) {
+  if (!empty($webform_permissions_by_term_settings)) {
+    if ($webform_permissions_by_term_settings['enable_webform_permissions_by_term']) {
+      // Webform is secured.
       return TRUE;
     }
   }
+  // Webform is not secured.
   return FALSE;
 }
 
-function does_webform_have_vocab_element(FormStateInterface $form_state){
-  $element = $form_state->getFormObject()->getEntity()->getWebform()->getElementDecoded(WEBFORM_ELEMENT_NAME);
-
-  if(!empty($element)){
+/**
+ * Method to test whether a Webform has the webform element.
+ *
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state object.
+ *
+ * @return bool
+ *   Whether the form has the element or not.
+ */
+function does_webform_have_vocab_element(FormStateInterface $form_state) {
+  $element = $form_state->getFormObject()->getEntity()->getWebform()->getElementDecoded(WEBFORM_SECURITY_ELEMENT_NAME);
+  if (!empty($element)) {
+    // Webform has security element.
     return TRUE;
   }
+  // Webform does not have security element.
   return FALSE;
 }
 
-function get_webform_secured_by_term_vocab_machine_name(){
+/**
+ * Method to get the machine name of the Taxonomy vocab we are secured with.
+ */
+function get_webform_secured_by_term_vocab_machine_name() {
   return \Drupal::config('webform_permissions_by_term.settings.webform_permissions_by_term_vocab')->get('value');
 }
 
-
-
 /**
  * Implements hook_ENTITY_TYPE_presave().
+ *
+ * When saving a webform configuration, add the webform security element if
+ * it is required. If it is no longer required and it exists, remove it.
  */
 function webform_permissions_by_term_webform_presave(Webform $entity) {
+  // Get the Webform elements.
   $elements = $entity->getElementsDecoded();
-  $has_security_element = array_key_exists(WEBFORM_ELEMENT_NAME, $elements);
+  // Does this webform already have the security element?
+  $has_security_element = array_key_exists(WEBFORM_SECURITY_ELEMENT_NAME, $elements);
 
-  if(!is_webform_entity_secured_by_term($entity) && $has_security_element) {
-    $entity->deleteElement(WEBFORM_ELEMENT_NAME);
+  // If Webform isn't secured, but it has the element, remove the element.
+  if (!is_webform_entity_secured_by_term($entity) && $has_security_element) {
+    $entity->deleteElement(WEBFORM_SECURITY_ELEMENT_NAME);
     return;
   }
-  if(!is_webform_entity_secured_by_term($entity)) return;
-  if($has_security_element) return;
 
+  // If the Webform isn't secured, return.
+  if (!is_webform_entity_secured_by_term($entity)) {
+    return;
+  }
+
+  // If the Webform is secured but it has the element, return.
+  if ($has_security_element) {
+    return;
+  }
+
+  // If we get to this point, the form is secured, and it doesn't have the
+  // security element, add it.
   $new_element = [
     '#type' => 'webform_entity_select',
     '#title' => 'DO NOT REMOVE-Permissions By term Element',
@@ -156,13 +168,13 @@ function webform_permissions_by_term_webform_presave(Webform $entity) {
     '#selection_handler' => 'default:taxonomy_term',
     '#selection_settings' => [
       'target_bundles' => [
-        'services' => 'services'
-      ]
-    ]
+        get_webform_secured_by_term_vocab_machine_name() => get_webform_secured_by_term_vocab_machine_name(),
+      ],
+    ],
   ];
+  // Add the new security element to the Webform definition.
+  $elements[WEBFORM_SECURITY_ELEMENT_NAME] = $new_element;
 
-  $elements[WEBFORM_ELEMENT_NAME] = $new_element;
-
+  // Set the elements.
   $entity->setElements($elements);
-
 }

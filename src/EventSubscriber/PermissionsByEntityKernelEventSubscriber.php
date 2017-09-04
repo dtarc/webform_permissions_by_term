@@ -86,10 +86,9 @@ class PermissionsByEntityKernelEventSubscriber implements EventSubscriberInterfa
       $entity = $request->attributes->get('webform_submission');
     }
 
-//    if ($request->attributes->has('webform_submission')) {
-//      $entity = $request->attributes->get('webform_submission');
-//    }
-
+    // If ($request->attributes->has('webform_submission')) {
+    //      $entity = $request->attributes->get('webform_submission');
+    //    }.
     // If there is no entity abort here.
     if (!$entity) {
       return;
@@ -103,8 +102,6 @@ class PermissionsByEntityKernelEventSubscriber implements EventSubscriberInterfa
       // Add this entity to the cache.
       $this->checkedEntityCache->add($entity);
     }
-
-
 
     // Check if the current user is allowed to access this webform submission.
     if (

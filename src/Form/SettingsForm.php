@@ -5,9 +5,10 @@ namespace Drupal\webform_permissions_by_term\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\taxonomy\Entity\Vocabulary;
-use Drupal\Core\Url;
-use Drupal\Core\Link;
 
+/**
+ *
+ */
 class SettingsForm extends ConfigFormBase {
 
   /**
@@ -22,7 +23,7 @@ class SettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'webform_permissions_by_term.settings'
+      'webform_permissions_by_term.settings',
     ];
   }
 
@@ -33,13 +34,12 @@ class SettingsForm extends ConfigFormBase {
 
     $config = \Drupal::config('webform_permissions_by_term.settings.webform_permissions_by_term_vocab');
 
-
     $form = parent::buildForm($form, $form_state);
 
     $vocabularies = Vocabulary::loadMultiple();
     $vocab_options = [];
 
-    if(!empty($vocabularies)) {
+    if (!empty($vocabularies)) {
 
       foreach ($vocabularies as $vocab => $settings) {
         $vocab_options[$settings->get('vid')] = $settings->get('name');
@@ -49,10 +49,11 @@ class SettingsForm extends ConfigFormBase {
         '#type' => 'select',
         '#title' => $this->t('Select Vocabulary'),
         '#options' => $vocab_options,
-        '#default_value' => $config->get('value')
+        '#default_value' => $config->get('value'),
       ];
 
-    } else {
+    }
+    else {
       drupal_set_message(t('There are no Taxonomy Vocabularies defined in this Drupal instance. Please define one to use this module.'));
     }
 
