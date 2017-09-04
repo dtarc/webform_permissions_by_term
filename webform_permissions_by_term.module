@@ -63,27 +63,6 @@ function webform_permissions_by_term_get_default_settings() {
 }
 
 /**
- * Implements hook_webform_submission_form_alter().
- */
-function webform_permissions_by_term_webform_submission_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
-  /* @var $webform_settings_form \Drupal\webform\WebformEntityForm */
-  $webform_settings_form = $form_state->getFormObject();
-  if (!is_webform_entity_secured_by_term($webform_settings_form->getEntity()->getWebform())) {
-    return;
-  }
-
-  if (!empty($form['elements'][WEBFORM_SECURITY_ELEMENT_NAME])) {
-    $form['elements'][WEBFORM_SECURITY_ELEMENT_NAME]['#hidden'] = TRUE;
-  }
-  // Todo, if request is post, set the val
-//   $request = \Drupal::request();
-//   if($request->getMethod() == 'POST') {
-//     $cqclocationid = $request->get('cqclocationid');
-//     $form['elements'][WEBFORM_SECURITY_ELEMENT_NAME]['#default_value'] = $cqclocationid;
-//   }
-}
-
-/**
  * Method to test if a Webform is secured by term.
  *
  * @param \Drupal\Core\Entity\EntityInterface $entity
