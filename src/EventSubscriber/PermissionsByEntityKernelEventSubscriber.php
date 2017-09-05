@@ -81,46 +81,58 @@ class PermissionsByEntityKernelEventSubscriber implements EventSubscriberInterfa
     // Get the entity.
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = NULL;
+    $webform = NULL;
+    $passover = TRUE;
+    $enable_webform_permissions_by_term = FALSE;
 
     if ($request->attributes->has('webform_submission')) {
       $entity = $request->attributes->get('webform_submission');
+      $passover = FALSE;
+      $enable_webform_permissions_by_term = $entity->getWebform()->getSetting('webform_permissions_by_term')['enable_webform_permissions_by_term'];
+    }
+    // Is it a webform and has a token??
+    else if ($request->attributes->has('webform') && $request->query->has('token')) {
+      $webform = $request->attributes->get('webform');
+      $token = $request->query->get('token');
+      $passover = FALSE;
+      $enable_webform_permissions_by_term = $webform->getSetting('webform_permissions_by_term')['enable_webform_permissions_by_term'];
+
+      // TODO Do this drupal way.
+      $storage = \Drupal::entityManager()->getStorage('webform_submission');
+      if ($webform_submissions_token = $storage->loadByProperties(['token' => $token])) {
+        $entity = reset($webform_submissions_token);
+      }
     }
 
-    // If ($request->attributes->has('webform_submission')) {
-    //      $entity = $request->attributes->get('webform_submission');
-    //    }.
-    // If there is no entity abort here.
-    if (!$entity) {
+    // If there is no entity and no webform abort here.
+    if ($passover == TRUE) {
       return;
     }
 
-    // If we already checked this entity, we do nothing.
-    if ($this->checkedEntityCache->isChecked($entity)) {
-      return;
-    }
-    else {
-      // Add this entity to the cache.
-      $this->checkedEntityCache->add($entity);
-    }
-
-    // Check if the current user is allowed to access this webform submission.
-    if (
-      $entity &&
-      $entity instanceof ContentEntityInterface &&
-      $entity->getEntityTypeId() == 'webform_submission' &&
-      $entity->getWebform()->getSetting('webform_permissions_by_term')['enable_webform_permissions_by_term'] == TRUE
+    if ($entity &&
+        $entity instanceof ContentEntityInterface &&
+        $entity->getEntityTypeId() == 'webform_submission' &&
+        $enable_webform_permissions_by_term == TRUE
     ) {
+      // If we already checked this entity, we do nothing.
+      if ($this->checkedEntityCache->isChecked($entity)) {
+        return;
+      }
+      else {
+        // Add this entity to the cache.
+        $this->checkedEntityCache->add($entity);
+      }
+
+      // Check if the current user is allowed to access this webform submission.
       if (!$this->webformAccessChecker->isWebformAccessAllowed($entity)) {
         // If the current user is not allowed to access this webform submission,
         // we throw an AccessDeniedHttpException.
         throw new AccessDeniedHttpException(
-          $this->translation->translate(
-            'You are not allowed to view this webform submission.'
-          )
+          $this->translation->translate('You are not allowed to view this webform submission.')
         );
       }
-
     }
+
   }
 
 }
