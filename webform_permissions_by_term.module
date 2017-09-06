@@ -141,9 +141,10 @@ function webform_permissions_by_term_webform_presave(Webform $entity) {
 
   // If we get to this point, the form is secured, and it doesn't have the
   // security element, add it.
+  // Todo, tell webform not to render this element?
   $new_element = [
     '#type' => 'webform_entity_select',
-    '#title' => 'DO NOT REMOVE-Permissions By term Element',
+    '#title' => 'Permissions By term Element',
     '#short_title_service' => 'Location ID',
     '#target_type' => 'taxonomy_term',
     '#selection_handler' => 'default:taxonomy_term',
