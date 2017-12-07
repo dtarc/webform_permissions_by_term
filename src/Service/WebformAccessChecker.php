@@ -7,7 +7,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\webform_permissions_by_term\Event\EntityFieldValueAccessDeniedEvent;
 use Drupal\permissions_by_term\Service\AccessCheck;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
 
 /**
  * Class WebformAccessChecker.
@@ -52,12 +52,13 @@ class WebformAccessChecker extends AccessCheck implements WebformAccessCheckerIn
    *   The database connection.
    */
   public function __construct(
-    EventDispatcherInterface $event_dispatcher,
+    ContainerAwareEventDispatcher $event_dispatcher,
     CheckedEntityCache $checked_entity_cache,
     EntityManagerInterface $entity_manager,
     Connection $database
   ) {
-    parent::__construct($database);
+    parent::__construct($database, $event_dispatcher);
+
     $this->eventDispatcher = $event_dispatcher;
     $this->checkedEntityCache = $checked_entity_cache;
 
