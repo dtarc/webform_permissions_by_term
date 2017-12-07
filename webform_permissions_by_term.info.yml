@@ -3,4 +3,4 @@ description: 'Extends the functionality of Permissions By Term to be able to lim
 type: module
 core: 8.x
 dependencies:
-  - drupal:permissions_by_term (>=1.39)
+  - permissions_by_term
