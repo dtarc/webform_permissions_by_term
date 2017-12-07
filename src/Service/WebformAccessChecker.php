@@ -4,7 +4,6 @@ namespace Drupal\webform_permissions_by_term\Service;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\webform_permissions_by_term\Event\EntityFieldValueAccessDeniedEvent;
 use Drupal\permissions_by_term\Service\AccessCheck;
 use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
@@ -17,20 +16,6 @@ use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
 class WebformAccessChecker extends AccessCheck implements WebformAccessCheckerInterface {
 
   /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
-   */
-  private $eventDispatcher;
-
-  /**
-   * The cache for checked entities.
-   *
-   * @var \Drupal\webform_permissions_by_term\Service\CheckedEntityCache
-   */
-  private $checkedEntityCache;
-
-  /**
    * The entity field value access denied event.
    *
    * @var \Drupal\webform_permissions_by_term\Event\EntityFieldValueAccessDeniedEvent
@@ -40,28 +25,15 @@ class WebformAccessChecker extends AccessCheck implements WebformAccessCheckerIn
   /**
    * WebformAccessChecker constructor.
    *
-   * We override the constructor, because we do not need the entity manager.
+   * We override the constructor.
    *
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
-   *   The event dispatcher.
-   * @param \Drupal\webform_permissions_by_term\Service\CheckedEntityCache $checked_entity_cache
-   *   The cache for checked entities.
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   The core entity type manager.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   *   The event dispatcher.
    */
-  public function __construct(
-    ContainerAwareEventDispatcher $event_dispatcher,
-    CheckedEntityCache $checked_entity_cache,
-    EntityManagerInterface $entity_manager,
-    Connection $database
-  ) {
+  public function __construct(Connection $database, ContainerAwareEventDispatcher $event_dispatcher) {
     parent::__construct($database, $event_dispatcher);
-
-    $this->eventDispatcher = $event_dispatcher;
-    $this->checkedEntityCache = $checked_entity_cache;
-
     $this->event = new EntityFieldValueAccessDeniedEvent();
   }
 
@@ -71,7 +43,6 @@ class WebformAccessChecker extends AccessCheck implements WebformAccessCheckerIn
   public function isWebformAccessAllowed(ContentEntityInterface $entity, $uid = FALSE) {
     if ($entity->getEntityTypeId() == 'webform_submission') {
       $permissions_by_term = NULL;
-
       $permissions_by_term = $entity->getData(WEBFORM_SECURITY_ELEMENT_NAME);
 
       // TODO Extend this so that user can select multiple terms.

@@ -5,10 +5,8 @@ services:
   webform_permissions_by_term.webform_access_checker:
     class: Drupal\webform_permissions_by_term\Service\WebformAccessChecker
     arguments:
-      - '@event_dispatcher'
-      - '@webform_permissions_by_term.checked_entity_cache'
-      - '@entity.manager'
       - '@database'
+      - '@event_dispatcher'
 
   webform_permissions_by_term.kernel_event_subscriber:
     class: Drupal\webform_permissions_by_term\EventSubscriber\PermissionsByEntityKernelEventSubscriber
