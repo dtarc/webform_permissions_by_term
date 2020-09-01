@@ -98,7 +98,7 @@ class PermissionsByEntityKernelEventSubscriber implements EventSubscriberInterfa
       $enable_webform_permissions_by_term = $webform->getSetting('webform_permissions_by_term')['enable_webform_permissions_by_term'];
 
       // TODO Do this drupal way.
-      $storage = \Drupal::entityManager()->getStorage('webform_submission');
+      $storage = \Drupal::service('entity_type.manager')->getStorage('webform_submission');
       if ($webform_submissions_token = $storage->loadByProperties(['token' => $token])) {
         $entity = reset($webform_submissions_token);
       }

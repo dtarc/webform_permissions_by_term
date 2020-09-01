@@ -6,9 +6,6 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\taxonomy\Entity\Vocabulary;
 
-/**
- *
- */
 class SettingsForm extends ConfigFormBase {
 
   /**
@@ -54,7 +51,7 @@ class SettingsForm extends ConfigFormBase {
 
     }
     else {
-      drupal_set_message(t('There are no Taxonomy Vocabularies defined in this Drupal instance. Please define one to use this module.'));
+      $this->messenger()->addStatus(t('There are no Taxonomy Vocabularies defined in this Drupal instance. Please define one to use this module.'));
     }
 
     return $form;
